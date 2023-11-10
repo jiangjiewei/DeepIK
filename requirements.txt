@@ -1,0 +1,16 @@
+pytorch==1.6.0 
+wheel==0.34.2
+timm==0.4.12
+tourchvision==0.7.0
+scipy==1.5.2
+joblib==0.16.0
+opencv-python==4.3.0.38
+scikit-image==0.19.2
+scikit-learn==0.23.2
+matplotlib==3.3.1
+efficientnet-pytorch==0.7.1
+ipython==7.30.1
+pandas==1.2.3
+protobuf==3.13.0
+h5py==3.5.0
+numpy==1.19.1
