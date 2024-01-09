@@ -47,14 +47,16 @@ class CustomImageFolder(datasets.ImageFolder):
         super(CustomImageFolder, self).__init__(root, transform)
 
     def _find_classes(self, dir):
-        class_to_idx={"Amoeba":[0,0],"Bacteria":[1,1],"Fungus":[2,2],"Others":[3,3],"Virus":[4,3]}
+		# The CustomImageFolder class is defined to specify the category labels produced by a dual-layer classifier of DeepIK model.
+        # The first layer is a binary classifier, and the second layer is a five-class classifier. 
+        class_to_idx={"Amoeba":[0,0],"Bacteria":[1,0],"Fungus":[2,0],"Others":[3,1],"Virus":[4,0]}
         classes=["Amoeba","Bacteria","Fungus","Others","Virus"]
         return classes, class_to_idx
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--data', metavar='DIR', default='./dataA_0802_original',
                     help='path to dataset')
-parser.add_argument('-a', '--arch', metavar='ARCH', default='densenet121',
+parser.add_argument('-a', '--arch', metavar='ARCH', default='mt2_densenet',
                     help='model architecture (default: resnet18)')
 parser.add_argument('-j', '--workers', default=12, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
@@ -207,25 +209,24 @@ def load_modle_trained(args):
     elif args.arch.find('densenet121') != -1:
         model = densenet121(pretrained=True)
         num_ftrs = model.classifier.in_features
-        # model.classifier = nn.Linear(num_ftrs, 5)
-        num_ftrs = model.classifier.in_features
-        model.classifier = nn.Linear(num_ftrs, 4)
-        model.classifier2 = nn.Linear(num_ftrs, 5)
-
+        model.classifier = nn.Linear(num_ftrs, 5)
+	
     elif args.arch.find('mt1_densenet') != -1:
         model = densenet121(pretrained=True)
         num_ftrs = model.classifier.in_features
-        # model.classifier = nn.Linear(num_ftrs, 5)
-        num_ftrs = model.classifier.in_features
-        model.classifier = nn.Linear(num_ftrs, 4)
+		
+		# Adding comments by Jiang Jiewei on January 9, 2024 
+		# Setting the number of categories for the dual-layer classifier: the first-layer classifier has 2 categories, and the second-layer classifier has 5 categories.	
+        model.classifier = nn.Linear(num_ftrs, 2)
         model.classifier2 = nn.Linear(num_ftrs, 5)
 
     elif args.arch.find('mt2_densenet') != -1:
         model = densenet121(pretrained=True)
         num_ftrs = model.classifier.in_features
-        # model.classifier = nn.Linear(num_ftrs, 5)
-        num_ftrs = model.classifier.in_features
-        model.classifier = nn.Linear(num_ftrs, 4)
+	
+		# Adding comments by Jiang Jiewei on January 9, 2024 
+		# Setting the number of categories for the dual-layer classifier: the first-layer classifier has 2 categories, and the second-layer classifier has 5 categories.	
+        model.classifier = nn.Linear(num_ftrs, 2)
         model.classifier2 = nn.Linear(num_ftrs, 5)
 
     elif args.arch.find('RepVGG_B2g4') != -1:

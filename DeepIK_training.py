@@ -50,7 +50,10 @@ class CustomImageFolder(datasets.ImageFolder):
         super(CustomImageFolder, self).__init__(root, transform)
 
     def _find_classes(self, dir):
-        class_to_idx={"Amoeba":[0,0],"Bacteria":[1,1],"Fungus":[2,2],"Others":[3,3],"Virus":[4,3]}
+	    # Adding comments by Jiang Jiewei on January 9, 2024 
+		# The CustomImageFolder class is defined to specify the actual category labels produced by a dual-layer classifier of DeepIK model.
+        # The first layer is a binary classifier, and the second layer is a five-class classifier. 
+        class_to_idx={"Amoeba":[0,0],"Bacteria":[1,0],"Fungus":[2,0],"Others":[3,1],"Virus":[4,0]}
         # class_to_idx={"Amoeba":[0,0],"Bacteria":[1,1],"Fungus":[2,1],"Others":[3,2],"Virus":[4,3]}
         classes=["Amoeba","Bacteria","Fungus","Others","Virus"]
         return classes, class_to_idx
@@ -58,6 +61,9 @@ class CustomImageFolder(datasets.ImageFolder):
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--data', metavar='DIR', default='./dataA_0802_jiang_8_2/',
                     help='path to dataset')
+
+# Adding comments by Jiang Jiewei on January 9, 2024 
+# Adding two-layer classifiers on the densenet121 network to train the DeepIK model, with the input parameter "densenet121" unchanged.
 parser.add_argument('-a', '--arch', metavar='ARCH', default='densenet121',
                     help='model architecture (default: resnet18)')
 parser.add_argument('-j', '--workers', default=12, type=int, metavar='N',
@@ -260,7 +266,9 @@ def main_worker(gpu, ngpus_per_node, args):
             checkpoint = torch.load("./pretrained_model/densenet121_model_best.pth.tar")
             model.load_state_dict(checkpoint['state_dict'],strict=False)
             num_ftrs = model.classifier.in_features
-            model.classifier = nn.Linear(num_ftrs, 4)
+			# Adding comments by Jiang Jiewei on January 9, 2024 
+			# Setting the number of categories for the dual-layer classifier: the first-layer classifier has 2 categories, and the second-layer classifier has 5 categories.
+            model.classifier = nn.Linear(num_ftrs, 2)
             model.classifier2 = nn.Linear(num_ftrs, 5)
             # model.classifier = nn.Linear(num_ftrs, 5)
             print('best_epoch and best_acc1 is: ', checkpoint['epoch'], checkpoint['best_acc1'])
@@ -326,7 +334,8 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # define loss function (criterion) and optimizer
     # criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-    #jiangjiewei add weight for crossentropyloss
+	# Adding comments by Jiang Jiewei on January 9, 2024 
+    # In the loss function of the second layer, the weight for each category is set to address the issue of imbalanced data. 
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
     criterion2 = nn.CrossEntropyLoss(weight=torch.Tensor([3, 5, 3, 1, 1])).cuda(args.gpu)# new
     # use_cuda = True
@@ -555,7 +564,10 @@ def train(train_loader, model, criterion, criterion2, optimizer, epoch, args):
 
         if args.gpu is not None:
             images = images.cuda(args.gpu, non_blocking=True)
-        target1=target[1] #四个类别
+	    
+		# Adding comments by Jiang Jiewei on January 9, 2024 
+		# Obtaining the labels and predicted probabilities for the two-layer classifier to calculate the combined loss of their integration.
+        target1=target[1] #两个类别
         target2=target[0] #五个类别
         target1 = target1.cuda(args.gpu, non_blocking=True)
         target2 = target2.cuda(args.gpu, non_blocking=True)
